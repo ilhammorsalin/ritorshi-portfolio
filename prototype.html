@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Portfolio Prototype — Placeholders</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; background: #0b0b12; color: #e6e6f0; }
+
+  .stage { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+
+  /* ---------- Scene 1: space intro (Three.js) ---------- */
+  .scene-1 { background: radial-gradient(ellipse at center, #141426 0%, #05050a 70%); }
+  .scene-1 .label { position: absolute; top: 12px; left: 12px; font-size: 11px; letter-spacing: 1px; color: #8f8fae; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); padding: 4px 10px; border-radius: 999px; }
+
+  .placeholder {
+    border: 2px dashed #ff7ac3;
+    border-radius: 8px;
+    color: #ff9ad6;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8px;
+    background: rgba(255, 122, 195, .06);
+    white-space: nowrap;
+  }
+  .placeholder.small { font-size: 11px; }
+
+  /* star field mock */
+  .stars { position: absolute; inset: 0; }
+  .star { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #fff; opacity: .8; }
+  .star.n { width: 2px; height: 2px; opacity: .5; }
+
+  /* shuttle path: enters left, exits right, "crashes" off-screen */
+  .shuttle { position: absolute; top: 40%; left: -180px; width: 160px; height: 70px; animation: fly 6s ease-in forwards; }
+  .shuttle .ship {
+    width: 100%; height: 100%; border-radius: 60% 10% 10% 60%;
+    background: linear-gradient(180deg, #f4f4fb, #b9b9d6);
+    position: relative;
+  }
+  .shuttle .ship::after { content: 'SHUTTLE (SVG)'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #444; }
+  .shuttle .flame { position: absolute; right: -28px; top: 26px; width: 34px; height: 18px; border-radius: 50%; background: radial-gradient(#ffd166, transparent); }
+  @keyframes fly {
+    0%   { transform: translateX(0) rotate(0deg); }
+    70%  { transform: translateX(38vw) rotate(0deg); }
+    85%  { transform: translateX(60vw) rotate(38deg); }
+    100% { transform: translateX(130vw) rotate(38deg); opacity: 0; }
+  }
+
+  /* debris + journal fly into center */
+  .debris { position: absolute; left: 50%; top: 45%; width: 260px; height: 120px; transform: translate(-50%, -50%); animation: settle 2.5s 6.1s ease-out forwards; opacity: 0; }
+  @keyframes settle { 0% { opacity: 0; transform: translate(-60vw, 20vh) rotate(20deg); } 100% { opacity: 1; transform: translate(-50%, -50%) rotate(0); } }
+  .debris .bits { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .debris .bits i { display: block; background: #6a6a8a; border-radius: 4px; }
+  .debris .bits i:nth-child(1) { width: 18px; height: 10px; }
+  .debris .bits i:nth-child(2) { width: 12px; height: 14px; }
+  .debris .bits i:nth-child(3) { width: 20px; height: 8px; }
+
+  .journal-tag { margin-top: 12px; width: 90px; height: 64px; margin-inline: auto; border-radius: 6px; background: #c8b48a; color: #4a3d28; display: flex; align-items: center; justify-content: center; font-size: 9px; }
+
+  .caption { position: absolute; bottom: 12px; left: 12px; font-size: 11px; color: #8f8fae; }
+
+  /* control bar */
+  .control { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 20; }
+  .control button {
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.2); color: #e6e6f0;
+    padding: 8px 16px; border-radius: 999px; cursor: pointer; font-size: 13px;
+  }
+  .control button:hover { background: rgba(255,255,255,.16); }
+
+  .journal-zoom {
+    position: absolute; left: 50%; top: 45%; width: 0; height: 0; opacity: 0; z-index: 10;
+    background: #f4e9d4; border-radius: 8px; overflow: hidden; transition: all .8s cubic-bezier(.2,.7,.2,1);
+  }
+  .journal-zoom.open { width: 100vw; height: 100vh; opacity: 1; left: 0; top: 0; }
+
+  /* ---------- Scene 2: journal (DOM) ---------- */
+  .scene-2 { display: none; }
+  .scene-2.visible { display: block; background: #f4e9d4; color: #3a2f1e; }
+
+  .page { position: absolute; top: 0; bottom: 0; display: flex; flex-direction: column; padding: 48px; }
+  .page.left { left: 0; width: 35%; border-right: 3px solid #8a7350; background: linear-gradient(90deg, #f4e9d4 92%, #d9c7a6); }
+  .page.right { right: 0; width: 65%; background: linear-gradient(270deg, #f4e9d4 92%, #d9c7a6); padding: 64px; }
+
+  .spine { position: absolute; left: 35%; top: 0; bottom: 0; width: 3px; background: #8a7350; }
+
+  .page h1 { font-size: 26px; margin-bottom: 8px; color: #4a3d28; }
+  .page .sub { font-size: 12px; color: #8a7350; margin-bottom: 28px; }
+
+  .nav { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .nav a {
+    display: block; padding: 14px 18px; border: 1px solid #c8b48a; border-radius: 8px;
+    text-decoration: none; color: #4a3d28; font-weight: 600; background: #efe2c8;
+    transition: background .2s;
+  }
+  .nav a:hover, .nav a.active { background: #4a3d28; color: #f4e9d4; }
+
+  .content-block { border: 2px dashed #a8946f; border-radius: 8px; padding: 24px; margin-bottom: 20px; color: #a8946f; font-size: 13px; min-height: 90px; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .page.right h2 { font-size: 20px; margin-bottom: 20px; color: #4a3d28; }
+
+  /* placeholder flip divider */
+  .divider { position: absolute; left: 35%; top: 0; bottom: 0; width: 3px; background: #8a7350; transform-origin: left center; transition: transform .6s; }
+  .page.right .flip-hint { position: absolute; bottom: 16px; right: 24px; font-size: 11px; color: #a8946f; }
+
+  .page-flip { position: absolute; left: 35%; top: 0; bottom: 0; width: 3px; background: #6a5a3d; z-index: 5; animation: flip 0.6s ease-in-out; }
+  @keyframes flip { 0% { transform: rotateY(0); } 50% { transform: rotateY(90deg); } 100% { transform: rotateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- ================= SCENE 1 : SPACE INTRO (React Three Fiber) ================= -->
+<section id="scene1" class="stage scene-1">
+  <span class="label">SCENE 1 — three.js canvas (placeholder)</span>
+
+  <div class="stars">
+    <i class="star" style="top:8%;left:12%"></i>
+    <i class="star n" style="top:20%;left:45%"></i>
+    <i class="star" style="top:12%;left:78%"></i>
+    <i class="star n" style="top:30%;left:20%"></i>
+    <i class="star" style="top:55%;left:90%"></i>
+    <i class="star n" style="top:70%;left:30%"></i>
+    <i class="star" style="top:82%;left:65%"></i>
+    <i class="star n" style="top:90%;left:15%"></i>
+  </div>
+
+  <!-- step 1: shuttle flies across and crashes off-screen -->
+  <div class="shuttle"><div class="ship"></div><div class="flame"></div></div>
+
+  <!-- step 2: debris + closed journal fly to center -->
+  <div class="debris">
+    <div class="placeholder">SVG DEBRIS</div>
+    <div class="bits"><i></i><i></i><i></i></div>
+    <div class="journal-tag">JOURNAL (SVG)</div>
+  </div>
+
+  <!-- step 3: journal opens + expands to fill viewport, then canvas unmounts -->
+  <div class="journal-zoom" id="zoomBox"></div>
+
+  <div class="caption">1. Shuttle flies &amp; crashes → 2. debris + journal fly in → 3. journal expands → canvas unmounts</div>
+
+  <div class="control">
+    <button onclick="step1()">Replay shuttle</button>
+    <button onclick="step2()">Debris + journal</button>
+    <button onclick="step3()">Journal expands → Scene 2</button>
+  </div>
+</section>
+
+<!-- ================= SCENE 2 : JOURNAL INTERFACE (DOM + Framer Motion) ================= -->
+<section id="scene2" class="scene-2 stage">
+  <span class="label" style="color:#8a7350; border-color:#a8946f;">SCENE 2 — journal, DOM + Framer Motion</span>
+
+  <div class="page left">
+    <h1>Ritorshi</h1>
+    <div class="sub">artist · graphic designer</div>
+    <ul class="nav" id="nav">
+      <li><a href="#" class="active" data-sec="portfolio">Portfolio</a></li>
+      <li><a href="#" data-sec="testimonials">Testimonials</a></li>
+      <li><a href="#" data-sec="contact">Contact me</a></li>
+    </ul>
+    <div style="flex:1"></div>
+    <div class="sub">left page — navigation</div>
+  </div>
+
+  <div class="spine"></div>
+
+  <div class="page right">
+    <h2 id="title">Portfolio</h2>
+    <div id="content">
+      <div class="content-block">PLACEHOLDER — project gallery / grid</div>
+      <div class="content-block">PLACEHOLDER — project card</div>
+    </div>
+    <span class="flip-hint">right page — content (page-flip via Framer Motion)</span>
+  </div>
+</section>
+
+<script>
+  // --- Scene 1 mock timeline ---
+  function restart(el) { var a = el.style.animation; el.style.animation = 'none'; void el.offsetWidth; el.style.animation = a || ''; }
+  function step1() { restart(document.querySelector('.shuttle')); restart(document.querySelector('.debris')); }
+  function step2() { restart(document.querySelector('.debris')); }
+  function step3() {
+    var zoom = document.getElementById('zoomBox');
+    zoom.classList.add('open');
+    setTimeout(function () {
+      document.getElementById('scene1').style.display = 'none';
+      document.getElementById('scene2').classList.add('visible');
+    }, 850);
+  }
+
+  // --- Scene 2: simple nav (placeholder for Framer Motion flip) ---
+  var content = {
+    portfolio: '<div class="content-block">PLACEHOLDER — project gallery / grid</div><div class="content-block">PLACEHOLDER — project card</div>',
+    testimonials: '<div class="content-block">PLACEHOLDER — testimonial quote</div><div class="content-block">PLACEHOLDER — testimonial quote</div>',
+    contact: '<div class="content-block">PLACEHOLDER — contact form</div><div class="content-block">PLACEHOLDER — social links</div>'
+  };
+  document.getElementById('nav').addEventListener('click', function (e) {
+    var a = e.target.closest('a');
+    if (!a) return;
+    e.preventDefault();
+    document.querySelectorAll('#nav a').forEach(function (x) { x.classList.remove('active'); });
+    a.classList.add('active');
+    document.getElementById('title').textContent = a.textContent;
+    document.getElementById('content').innerHTML = content[a.dataset.sec];
+
+    var flip = document.createElement('div');
+    flip.className = 'page-flip';
+    document.getElementById('scene2').appendChild(flip);
+    setTimeout(function () { flip.remove(); }, 700);
+  });
+</script>
+
+</body>
+</html>
