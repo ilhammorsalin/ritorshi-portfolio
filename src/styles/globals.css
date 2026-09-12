@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  background: black;
+  color: white;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Lenis Smooth Scroll Setup */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+/* CRITICAL: Makes DOM sections transparent so the 3D Canvas is visible underneath */
+section {
+  position: relative;
+  background: transparent;
+}
