@@ -38,6 +38,8 @@ const CrashSequence = ({ onJournalClick }: { onJournalClick: () => void }) => {
   const debris2Ref = useRef<THREE.Group>(null);
 
   const startTime = useRef<number | null>(null);
+  const clickTime = useRef<number | null>(null);
+  const [clicked, setClicked] = useState(false);
 
   const journalTarget = new THREE.Vector3(0, 0, 0.5);
   const scrapTarget = new THREE.Vector3(0, 2.5, 0.2);
@@ -63,18 +65,41 @@ const CrashSequence = ({ onJournalClick }: { onJournalClick: () => void }) => {
       }
     };
 
-    lerpPos(journalRef, journalTarget);
+    if (!clicked) {
+      lerpPos(journalRef, journalTarget);
+    } else {
+      if (clickTime.current === null) clickTime.current = clock.getElapsedTime();
+      const clickElapsed = clock.getElapsedTime() - clickTime.current;
+      const flyProgress = Math.min(clickElapsed / 1.5, 1);
+      const flyEased = easeOutCubic(flyProgress);
+
+      if (journalRef.current) {
+        // Fly towards camera and rotate
+        journalRef.current.position.lerpVectors(journalTarget, new THREE.Vector3(0, 0, 4.5), flyEased);
+        journalRef.current.rotation.y = flyEased * Math.PI * 2; // Spin
+        journalRef.current.rotation.z = flyEased * 0.2; // Slight tilt
+        
+        if (flyProgress >= 1) {
+          onJournalClick(); // Transition to 2D Journal view
+        }
+      }
+    }
+
     lerpPos(scrapRef, scrapTarget);
     lerpPos(debris1Ref, debris1Target);
     lerpPos(debris2Ref, debris2Target);
   });
+
+  const handleJournalClick = () => {
+    if (!clicked) setClicked(true);
+  };
 
   return (
     <group>
       <Flash ref={flashRef} position={[-6, 4, 1]} />
 
       <group ref={journalRef}>
-        <Journal onClick={onJournalClick} />
+        <Journal onClick={handleJournalClick} />
       </group>
 
       <group ref={scrapRef}>
