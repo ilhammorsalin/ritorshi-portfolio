@@ -8,7 +8,15 @@ html, body, #root {
   width: 100%;
   height: 100%;
   overflow-x: hidden;
-  background: black;
+  background: #000000;
+  /* Fallback: multiple radial soft blobs - dark purple to black (no linear) */
+  background:
+    radial-gradient(ellipse 92% 78% at 18% 18%, rgba(36, 16, 72, 0.95) 0%, transparent 62%),
+    radial-gradient(ellipse 78% 62% at 84% 18%, rgba(58, 31, 107, 0.45) 0%, transparent 60%),
+    radial-gradient(ellipse 88% 54% at 48% 58%, rgba(30, 15, 58, 0.28) 0%, transparent 68%),
+    radial-gradient(ellipse 110% 70% at 45% 102%, rgba(12, 6, 28, 0.95) 0%, transparent 68%),
+    #000000;
+  background-attachment: fixed;
   color: white;
   font-family: system-ui, -apple-system, sans-serif;
 }

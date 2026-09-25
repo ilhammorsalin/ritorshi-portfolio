@@ -2,8 +2,10 @@ import { Canvas } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import Lenis from 'lenis';
 import { AppProvider, useAppContext } from './context/AppContext';
-import { Scene } from './components/canvas/Scene';
+import { StarsScene } from './components/canvas/StarsScene';
+import { HeroScene } from './components/canvas/HeroScene';
 import { DOMOverlay } from './components/dom/DOMOverlay';
+import { ScrollReactiveBackground } from './components/dom/ScrollReactiveBackground';
 import './styles/globals.css';
 
 function AppContent() {
@@ -33,16 +35,32 @@ function AppContent() {
 
   return (
     <div className="relative w-full h-full bg-black">
-      {/* Fixed 3D Background */}
+      {/* Layer 0: BG + radial gradients composited together (black base + soft distorted radials) */}
+      <ScrollReactiveBackground />
+
+      {/* Layer 1: Stars - blinking stars above Layer 0, no shaders covering it */}
       <Canvas
-        className="!fixed inset-0 z-0"
+        className="!fixed inset-0 z-[1] pointer-events-none"
         camera={{ position: [0, 0, 10], fov: 45 }}
         dpr={[1, 2]}
+        gl={{ alpha: true }}
+        style={{ background: 'transparent', pointerEvents: 'none' }}
       >
-        <Scene />
+        <StarsScene />
       </Canvas>
 
-      {/* Scrollable HTML Overlay */}
+      {/* Layer 2: Interactive 3D (Hero / Explosion shaders) - above stars, transparent so both Layer 0 & 1 show through */}
+      <Canvas
+        className="!fixed inset-0 z-[2]"
+        camera={{ position: [0, 0, 10], fov: 45 }}
+        dpr={[1, 2]}
+        gl={{ alpha: true }}
+        style={{ background: 'transparent' }}
+      >
+        <HeroScene />
+      </Canvas>
+
+      {/* DOM Overlay */}
       <DOMOverlay />
     </div>
   );

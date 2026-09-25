@@ -13,10 +13,18 @@ export function CameraRig() {
 
     if (activePage !== 'home') {
       targetZ = 2; // Zoom in close to the object
-      targetY = 0; // Center vertically on the object
-      if (activePage === 'graphic-design') targetX = -4;
-      if (activePage === 'animations') targetX = 0;
-      if (activePage === 'cinematography') targetX = 4;
+      if (activePage === 'graphic-design') {
+        targetX = -3.8;
+        targetY = -2.8;
+      }
+      if (activePage === 'animations') {
+        targetX = 0.3;
+        targetY = -3.3;
+      }
+      if (activePage === 'cinematography') {
+        targetX = 3.7;
+        targetY = -2.5;
+      }
     }
 
     camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.05);
