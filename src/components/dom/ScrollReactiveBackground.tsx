@@ -1,34 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
-import { useAppContext } from '../../context/AppContext';
+import { useEffect, useRef } from 'react';
+import { scrollStore } from '../../lib/scrollStore';
 
-export function ScrollReactiveBackground() {
-  const { scrollProgress } = useAppContext();
-  const [displayProgress, setDisplayProgress] = useState(0);
-  const targetRef = useRef(scrollProgress);
-  const rafRef = useRef<number>(0);
-
-  // Sync lerp speed with CameraRig (0.05) so gradients scroll 1:1 with stars
-  useEffect(() => {
-    targetRef.current = scrollProgress;
-  }, [scrollProgress]);
-
-  useEffect(() => {
-    const tick = () => {
-      setDisplayProgress((prev) => {
-        const target = targetRef.current;
-        const next = prev + (target - prev) * 0.05;
-        if (Math.abs(next - target) < 0.0005) return target;
-        return next;
-      });
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, []);
-
-  // Layer 0: Black base + distorted radial gradients composited together
-  // Scrolls at same speed as stars (Layer 1) — no lag
-  const background = `
+// Layer 0: Black base + distorted radial gradients composited together.
+// Scrolls at same speed as the stars/camera (Layer 1) — no lag.
+const BACKGROUND = `
     radial-gradient(ellipse 92% 78% at 18% 18%, rgba(36, 16, 72, 0.95) 0%, rgba(26, 11, 46, 0.81) 22%, rgba(38, 18, 78, 0.40) 48%, rgba(18, 8, 38, 0.17) 64%, transparent 74%),
     radial-gradient(ellipse 76% 62% at 84% 16%, rgba(58, 31, 107, 0.42) 0%, rgba(42, 20, 80, 0.31) 28%, rgba(26, 11, 46, 0.17) 54%, transparent 72%),
     radial-gradient(ellipse 86% 52% at 48% 52%, rgba(45, 22, 88, 0.30) 0%, rgba(30, 15, 58, 0.26) 26%, rgba(18, 10, 36, 0.14) 56%, transparent 74%),
@@ -38,19 +13,39 @@ export function ScrollReactiveBackground() {
     #000000
   `;
 
-  // Same scroll amount as CameraRig: targetY = -scrollProgress * 40
-  // Convert world units to DOM pixels: 40 units ≈ 45vh of DOM scroll travel
-  // Using -displayProgress * 45vh keeps gradients locked 1:1 with stars
-  const translateY = -displayProgress * 45;
+export function ScrollReactiveBackground() {
+  const gradientRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Lerp exactly like CameraRig (0.05) so gradients stay visually locked 1:1
+    // with the camera. Written straight to the DOM node — React never re-renders
+    // during scroll.
+    let rafId = 0;
+    let current = 0;
+
+    const tick = () => {
+      const target = scrollStore.progress;
+      current += (target - current) * 0.05;
+      if (Math.abs(current - target) < 0.0005) current = target;
+
+      if (gradientRef.current) {
+        gradientRef.current.style.transform = `translate3d(0, ${-current * 45}vh, 0)`;
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+
+    return () => cancelAnimationFrame(rafId);
+  }, []);
 
   return (
     <>
       <div
+        ref={gradientRef}
         className="fixed inset-0 z-0 pointer-events-none"
         style={{
-          background,
+          background: BACKGROUND,
           backgroundColor: '#000000',
-          transform: `translate3d(0, ${translateY}vh, 0)`,
           willChange: 'transform',
           // Extend height to avoid gaps when translated -45vh at scroll 1
           height: '190vh',

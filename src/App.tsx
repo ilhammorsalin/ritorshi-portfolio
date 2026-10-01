@@ -1,62 +1,67 @@
 import { Canvas } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import Lenis from 'lenis';
-import { AppProvider, useAppContext } from './context/AppContext';
+import { AppProvider } from './context/AppContext';
 import { StarsScene } from './components/canvas/StarsScene';
 import { HeroScene } from './components/canvas/HeroScene';
 import { DOMOverlay } from './components/dom/DOMOverlay';
 import { ScrollReactiveBackground } from './components/dom/ScrollReactiveBackground';
+import { scrollStore } from './lib/scrollStore';
 import './styles/globals.css';
 
 function AppContent() {
-  const { setScrollProgress } = useAppContext();
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      // We drive lenis.raf() ourselves from a single loop below
+      autoRaf: false,
     });
     lenisRef.current = lenis;
 
-    // Hook Lenis scroll data to our React Context
-    lenis.on('scroll', (e: any) => {
-      setScrollProgress(e.progress); // 0 to 1
+    // Publish scroll progress to the module store (no React re-renders).
+    // Camera and background read this inside their own frame loops.
+    lenis.on('scroll', (e: Lenis) => {
+      scrollStore.progress = e.progress;
     });
 
-    function raf(time: number) {
+    // Single rAF loop driving Lenis. The R3F canvas keeps its own frameloop,
+    // but no React state updates happen during scroll anymore.
+    let rafId = 0;
+    function loop(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(loop);
     }
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(loop);
 
-    return () => { lenis.destroy(); };
-  }, [setScrollProgress]);
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+      lenisRef.current = null;
+    };
+  }, []);
 
   return (
     <div className="relative w-full h-full bg-black">
       {/* Layer 0: BG + radial gradients composited together (black base + soft distorted radials) */}
       <ScrollReactiveBackground />
 
-      {/* Layer 1: Stars - blinking stars above Layer 0, no shaders covering it */}
+      {/* Single shared WebGL context: stars + hero in ONE canvas.
+          Was two stacked canvases = 2 GL contexts, 2 render passes, double GPU/compositor cost. */}
       <Canvas
-        className="!fixed inset-0 z-[1] pointer-events-none"
+        className="!fixed inset-0 z-[1]"
         camera={{ position: [0, 0, 10], fov: 45 }}
-        dpr={[1, 2]}
-        gl={{ alpha: true }}
-        style={{ background: 'transparent', pointerEvents: 'none' }}
-      >
-        <StarsScene />
-      </Canvas>
-
-      {/* Layer 2: Interactive 3D (Hero / Explosion shaders) - above stars, transparent so both Layer 0 & 1 show through */}
-      <Canvas
-        className="!fixed inset-0 z-[2]"
-        camera={{ position: [0, 0, 10], fov: 45 }}
-        dpr={[1, 2]}
-        gl={{ alpha: true }}
+        dpr={[1, 1.5]}
+        gl={{
+          alpha: true,
+          antialias: true,
+          powerPreference: 'high-performance',
+        }}
         style={{ background: 'transparent' }}
       >
+        <StarsScene />
         <HeroScene />
       </Canvas>
 

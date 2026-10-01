@@ -1,14 +1,17 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useAppContext } from '../../context/AppContext';
+import { scrollStore } from '../../lib/scrollStore';
 import * as THREE from 'three';
 
 export function CameraRig() {
   const { camera } = useThree();
-  const { scrollProgress, activePage } = useAppContext();
+  const { activePage } = useAppContext();
 
   useFrame(() => {
+    // Read scroll progress straight from the module store — no React subscription,
+    // no context re-render per frame.
     let targetX = 0;
-    let targetY = -scrollProgress * 40;
+    let targetY = -scrollStore.progress * 40;
     let targetZ = 10; // Default home Z
 
     if (activePage !== 'home') {

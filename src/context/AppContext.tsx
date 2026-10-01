@@ -4,8 +4,6 @@ import type { ReactNode } from 'react';
 interface AppContextType {
   hasExploded: boolean;
   setHasExploded: (val: boolean) => void;
-  scrollProgress: number;
-  setScrollProgress: (val: number) => void;
   activePage: string;
   setActivePage: (page: string) => void;
 }
@@ -17,7 +15,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [hasExploded, setHasExploded] = useState(() => {
     return sessionStorage.getItem('ritoshi_exploded') === 'true';
   });
-  const [scrollProgress, setScrollProgress] = useState(0);
   const [activePage, setActivePage] = useState('home');
 
   useEffect(() => {
@@ -26,8 +23,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [hasExploded]);
 
+  // Note: scrollProgress intentionally lives in the module-level scroll store
+  // (src/lib/scrollStore.ts), NOT in React state. Updating context on every
+  // scroll frame re-rendered the entire tree ~60x/sec and caused scroll jank.
   return (
-    <AppContext.Provider value={{ hasExploded, setHasExploded, scrollProgress, setScrollProgress, activePage, setActivePage }}>
+    <AppContext.Provider value={{ hasExploded, setHasExploded, activePage, setActivePage }}>
       {children}
     </AppContext.Provider>
   );

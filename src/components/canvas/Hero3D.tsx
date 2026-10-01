@@ -55,9 +55,9 @@ export function Hero3D() {
 
   // Final resting positions for the 3 icons near bottom of screen in asymmetrical positions
   const finalPositions = useMemo(() => [
-    new THREE.Vector3(-3.8, -2.8, 0),  // Sketchbook
-    new THREE.Vector3(0.3, -3.3, 0),   // TV
-    new THREE.Vector3(3.7, -2.5, 0),   // Camera
+    new THREE.Vector3(-3.8, -1.5, 0),  // Sketchbook
+    new THREE.Vector3(0, -2, 0),   // TV
+    new THREE.Vector3(3.7, -1.5, 0),   // Camera
   ], []);
 
   // Final resting rotations (subtle unique fixed tilt on Z-axis for a chaotic sticker look)

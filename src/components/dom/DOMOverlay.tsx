@@ -62,7 +62,7 @@ export function DOMOverlay() {
     // Post-dive layout: covers the 3D view completely.
     return (
       <div className="relative z-50 w-full h-full bg-[#1a0b2e]/95 flex flex-col items-center justify-center p-8">
-        <button 
+        <button
           className="absolute top-8 left-8 px-6 py-2 bg-white text-black font-bold rounded hover:bg-gray-200 transition"
           onClick={() => setActivePage('home')}
         >
@@ -73,7 +73,7 @@ export function DOMOverlay() {
         </h1>
         <div className="max-w-3xl text-center text-lg opacity-90 text-white">
           <p>
-            Welcome to the {activePage.replace('-', ' ')} section! Here is where we will display your specific works, 
+            Welcome to the {activePage.replace('-', ' ')} section! Here is where we will display your specific works,
             embedded videos, and image galleries.
           </p>
         </div>
@@ -84,7 +84,7 @@ export function DOMOverlay() {
   return (
     // pointer-events-none allows clicking 3D objects underneath!
     <div className="relative z-10 w-full pointer-events-none">
-      
+
       {/* Section 1: Hero (100vh) */}
       <section className="h-screen flex flex-col items-center justify-start pt-[8vh] text-center">
         {/* Title: slides in from left after explosion */}
@@ -124,9 +124,10 @@ export function DOMOverlay() {
 
       {/* Section 2: Intro (100vh) */}
       <section className="h-screen flex items-center justify-center">
-        <div className="max-w-2xl pointer-events-auto bg-black/40 p-8 rounded-lg backdrop-blur-sm">
-          <h2 className="text-4xl font-bold mb-4">Here's Why I Am The Main Character</h2>
-          <p>Comic-style backstory text and software skill badges go here...</p>
+        <div className="max-w-2xl pointer-events-auto bg-black/40 p-8 rounded-lg">
+          <svg width="24" height="24" fill="none" stroke="currentColor">
+                <path d="/home/ilham/Disc-D/Coding/Project/Rit/Assets/3 main character/heres why im the mc.svg" strokeWidth="2" />
+              </svg>
         </div>
       </section>
 
@@ -139,7 +140,7 @@ export function DOMOverlay() {
       <section className="h-screen flex items-center justify-center">
         <h2 className="text-4xl font-bold pointer-events-auto">Contact Me (Submarine Porthole)</h2>
       </section>
-      
+
       {/* Extra space to allow scrolling past the last section */}
       <section className="h-screen"></section>
     </div>
