@@ -3,9 +3,6 @@
 import Link from "next/link"
 import Image from "next/image"
 
-import { useEffect, useRef } from "react"
-import { motion, useMotionValue, useScroll, useTransform } from "framer-motion"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -18,145 +15,56 @@ const headingClass =
 
 const shellClass = "mx-auto w-full max-w-5xl px-6"
 
-const placeholderTones = {
-  violet: "border-violet-400/40 bg-violet-500/25 text-violet-50",
-  purple: "border-purple-400/50 bg-purple-600/40 text-purple-50",
-  amber: "border-amber-400/40 bg-amber-500/25 text-amber-50",
-  sky: "border-sky-400/40 bg-sky-500/25 text-sky-50",
-  rose: "border-rose-400/40 bg-rose-500/25 text-rose-50",
-  zinc: "border-zinc-400/30 bg-zinc-600/25 text-zinc-100",
-} as const
-
-type Tone = keyof typeof placeholderTones
-
-function Placeholder({
-  label,
-  tone,
-  className,
-}: {
-  label: string
-  tone: Tone
-  className?: string
-}) {
-  return (
-    <div
-      className={cn(
-        "flex items-center justify-center border border-dashed p-4 text-center text-[11px] font-semibold tracking-[0.18em] uppercase",
-        placeholderTones[tone],
-        className
-      )}
-    >
-      <span className="text-balance">{label}</span>
-    </div>
-  )
-}
-
-// Swap-ready: every label, tone and size lives here, so replacing a block with
-// real art only touches this object and the matching component props.
-const placeholders = {
-  hero: {
-    label: "Ritorshi's Studio SVG Text Placeholder",
-    tone: "violet" as Tone,
-    className: "h-56 w-full max-w-3xl sm:h-64 md:h-72",
+const work = [
+  {
+    label: "Graphic Design",
+    src: "/work/sketchbook.png",
+    width: 601,
+    height: 596,
+    className: "-rotate-6",
   },
-  process: {
-    label: "Process Image Placeholder",
-    tone: "purple" as Tone,
-    className: "min-h-72 w-full lg:min-h-[26rem]",
+  {
+    label: "Animation",
+    src: "/work/crt.png",
+    width: 2066,
+    height: 2048,
+    className: "rotate-3",
   },
-  work: [
-    {
-      label: "Graphic Design",
-      tone: "amber" as Tone,
-      className: "h-40 w-56 -rotate-6 sm:-mr-6 sm:w-60",
-    },
-    {
-      label: "Animation",
-      tone: "sky" as Tone,
-      className: "h-40 w-56 rotate-3 sm:-mr-6 sm:w-60",
-    },
-    {
-      label: "Films",
-      tone: "rose" as Tone,
-      className: "h-40 w-56 -rotate-2 sm:w-60",
-    },
-  ],
-  software: [
-    { label: "Ps", tone: "zinc" as Tone, className: "size-16 p-1 text-[10px] tracking-wider" },
-    { label: "Ae", tone: "zinc" as Tone, className: "size-16 p-1 text-[10px] tracking-wider" },
-    { label: "Pr", tone: "zinc" as Tone, className: "size-16 p-1 text-[10px] tracking-wider" },
-    { label: "Blender", tone: "zinc" as Tone, className: "size-16 p-1 text-[10px] tracking-wider" },
-  ],
-  polaroids: [
-    {
-      label: "Polaroid PNG 1",
-      tone: "rose" as Tone,
-      className: "size-40 rotate-6 sm:size-44 lg:size-52",
-    },
-    {
-      label: "Polaroid PNG 2",
-      tone: "sky" as Tone,
-      className: "size-40 -rotate-6 sm:size-44 lg:size-52",
-    },
-  ],
-  testimonialImage: {
-    label: "Testimonial Image Placeholder",
-    tone: "zinc" as Tone,
-    className: "aspect-square w-full max-w-xs justify-self-center",
+  {
+    label: "Films",
+    src: "/work/camera.png",
+    width: 2066,
+    height: 2048,
+    className: "-rotate-2",
   },
-}
+]
 
-// The artwork is a tall portrait image, so it is drawn at its native aspect
-// (full viewport width) and scrolled through the fixed viewport window. This is
-// the one number that has to stay in sync with the file at /public/space-bg.png.
-const BACKDROP_ASPECT = "1125 / 6272"
+const tools = [
+  { label: "Photoshop", src: "/about/ps.png", width: 147, height: 146 },
+  { label: "Animate", src: "/about/an.png", width: 136, height: 134 },
+  { label: "Premiere Pro", src: "/about/pr.png", width: 142, height: 139 },
+  { label: "Figma", src: "/about/figma.png", width: 90, height: 121 },
+]
+
+const story = [
+  "I am a designer and animator who got here by making things for friends for free until the requests stopped being favours. My first logo was drawn in a notebook, scanned badly, and used anyway. That project taught me more than any tutorial, mainly that a clear idea beats a clean file every time.",
+  "These days I move between brand work, motion design and short films. I like the part where a brief is still vague and nothing has been decided yet, and I like the part where it all lines up. The middle is mostly coffee, timelines and quiet problem solving.",
+  "Outside of client work I keep a sketchbook of unfinished scenes and a growing folder of sounds I will use eventually. If you want to talk shop about type, timing or why a certain transition feels right, I will happily derail a conversation for an hour.",
+]
 
 export default function Page() {
-  const backdropRef = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll()
-
-  // Distance the layer can travel before its bottom edge meets the viewport
-  // bottom. Measured rather than assumed, so the backdrop never exposes a gap
-  // and the whole image is seen once over the length of the page.
-  const travel = useMotionValue(0)
-  const y = useTransform(
-    [scrollYProgress, travel],
-    ([progress, distance]: number[]) => -progress * distance
-  )
-
-  useEffect(() => {
-    const layer = backdropRef.current
-    if (!layer) return
-
-    const measure = () => {
-      travel.set(Math.max(0, layer.offsetHeight - window.innerHeight))
-    }
-
-    measure()
-
-    const observer = new ResizeObserver(measure)
-    observer.observe(layer)
-
-    return () => observer.disconnect()
-  }, [travel])
-
   return (
     <main className="relative min-h-svh overflow-x-hidden">
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <motion.div
-          ref={backdropRef}
-          style={{ y, aspectRatio: BACKDROP_ASPECT }}
-          className="absolute inset-x-0 top-0 min-h-full"
-        >
-          <Image
-            src="/space-bg.png"
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
-        </motion.div>
+      {/* Backdrop lives in the document, so it scrolls 1:1 with the page. */}
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <Image
+          src="/space-bg.png"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-top"
+        />
       </div>
 
       {/* 1. Hero */}
@@ -167,7 +75,14 @@ export default function Page() {
         <h1 id="hero-heading" className="sr-only">
           Ritorshi&rsquo;s Studio
         </h1>
-        <Placeholder {...placeholders.hero} />
+        <Image
+          src="/hero-text.png"
+          alt=""
+          width={1019}
+          height={429}
+          priority
+          className="h-auto w-full max-w-3xl -rotate-2"
+        />
       </section>
 
       {/* 2. Process */}
@@ -200,7 +115,9 @@ export default function Page() {
               </Text>
             </div>
           </div>
-          <Placeholder {...placeholders.process} />
+          <div className="flex min-h-72 items-center justify-center border border-dashed border-purple-400/50 bg-purple-600/40 p-4 text-center text-[11px] font-semibold tracking-[0.18em] text-purple-50 uppercase lg:min-h-[26rem]">
+            Process Image Placeholder
+          </div>
         </div>
       </section>
 
@@ -210,84 +127,125 @@ export default function Page() {
           <h2 id="work-heading" className={cn(headingClass, "text-center")}>
             My Work
           </h2>
-          <div className="mt-14 flex flex-col items-center justify-center gap-6 sm:flex-row sm:gap-0">
-            {placeholders.work.map((item) => (
-              <Placeholder key={item.label} {...item} />
+          <ul className="mt-14 flex flex-col items-center justify-center gap-14 sm:flex-row sm:items-start sm:justify-between sm:gap-10 lg:gap-16">
+            {work.map((item) => (
+              <li
+                key={item.label}
+                className={cn(
+                  "flex w-56 shrink-0 flex-col items-center",
+                  item.className
+                )}
+              >
+                <Image
+                  src={item.src}
+                  alt=""
+                  width={item.width}
+                  height={item.height}
+                  sizes="240px"
+                  className="h-44 w-auto object-contain drop-shadow-[0_18px_24px_rgba(0,0,0,0.45)]"
+                />
+                <span className="mt-4 text-[11px] font-semibold tracking-[0.18em] uppercase">
+                  {item.label}
+                </span>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </section>
 
       {/* 4. About Me */}
       <section aria-labelledby="about-heading" className="py-24 sm:py-32">
         <div className={shellClass}>
-          <div className="relative">
-            <div className="lg:max-w-[64%]">
-              <h2 id="about-heading" className={headingClass}>
-                Here&rsquo;s Why I Am The Main Character
-              </h2>
-              <div className="mt-6 space-y-4">
-                <Text>
-                  I am a designer and animator who got here by making things for
-                  friends for free until the requests stopped being favours. My
-                  first logo was drawn in a notebook, scanned badly, and used
-                  anyway. That project taught me more than any tutorial, mainly
-                  that a clear idea beats a clean file every time.
-                </Text>
-                <Text>
-                  These days I move between brand work, motion design and short
-                  films. I like the part where a brief is still vague and
-                  nothing has been decided yet, and I like the part where it all
-                  lines up. The middle is mostly coffee, timelines and quiet
-                  problem solving.
-                </Text>
-                <Text>
-                  Outside of client work I keep a sketchbook of unfinished
-                  scenes and a growing folder of sounds I will use eventually.
-                  If you want to talk shop about type, timing or why a certain
-                  transition feels right, I will happily derail a conversation
-                  for an hour.
-                </Text>
-              </div>
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <Text variant="small" className="mr-1 uppercase tracking-widest text-muted-foreground">
-                  Tools
-                </Text>
-                {placeholders.software.map((item) => (
-                  <Placeholder key={item.label} {...item} />
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-12 flex flex-wrap justify-center gap-6 lg:mt-0 lg:contents">
-              {placeholders.polaroids.map((item, index) => (
-                <Placeholder
-                  key={item.label}
-                  {...item}
-                  className={cn(
-                    item.className,
-                    index === 0
-                      ? "lg:absolute lg:top-2 lg:right-2"
-                      : "lg:absolute lg:right-36 lg:bottom-6"
-                  )}
-                />
-              ))}
-            </div>
+          <h2 id="about-heading" className="sr-only">
+            Here&rsquo;s Why I Am The Main Character
+          </h2>
+          <div className="sr-only">
+            {story.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
           </div>
         </div>
+
+        {/* Full-bleed: the heading art and the story art span the viewport edge to edge. */}
+          <div className="flex w-full flex-col items-center gap-10">
+            <Image
+              src="/main-char.svg"
+              alt=""
+              width={932}
+              height={810}
+              unoptimized
+              className="h-auto w-full"
+            />
+            <div className="relative w-full">
+              <Image
+                src="/about/full-text.png"
+                alt=""
+                width={1164}
+                height={1986}
+                className="h-auto w-full"
+              />
+              {/* Sits in the gap under the "I kick ass at" line of the artwork. */}
+              <ul className="absolute inset-x-0 top-[67%] flex items-center justify-center gap-4 sm:gap-5">
+                {tools.map((tool, index) => (
+                  <li key={tool.label}>
+                    <Image
+                      src={tool.src}
+                      alt={tool.label}
+                      width={tool.width}
+                      height={tool.height}
+                      sizes="56px"
+                      className={cn(
+                        "h-11 w-auto drop-shadow-[0_6px_10px_rgba(0,0,0,0.45)] sm:h-12",
+                        index % 2 === 0 ? "-rotate-6" : "rotate-6"
+                      )}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className={cn(shellClass, "mt-16 flex flex-wrap items-center justify-center gap-6 sm:gap-8")}>
+            <Image
+              src="/about/red-banner.png"
+              alt=""
+              width={531}
+              height={354}
+              className="h-20 w-auto -rotate-3 sm:h-24"
+            />
+            <Image
+              src="/about/polaroid-1.png"
+              alt=""
+              width={495}
+              height={603}
+              className="w-28 rotate-6 sm:w-32"
+            />
+            <Image
+              src="/about/yellow-banner.png"
+              alt=""
+              width={799}
+              height={281}
+              className="h-16 w-auto -rotate-2 sm:h-20"
+            />
+          </div>
       </section>
 
       {/* 5. Testimonials */}
       <section aria-labelledby="testimonials-heading" className="py-24 sm:py-32">
         <div className={shellClass}>
-          <h2
-            id="testimonials-heading"
-            className={cn(headingClass, "text-center")}
-          >
+          <h2 id="testimonials-heading" className="sr-only">
             Testimonials
           </h2>
-          <div className="relative mx-auto mt-14 max-w-4xl border-4 border-zinc-700 bg-zinc-900/90 p-6 shadow-2xl sm:p-10">
-            <span className="absolute top-2 left-3 text-[10px] tracking-[0.25em] uppercase text-zinc-500">
+          <Image
+            src="/testimonials.png"
+            alt=""
+            width={1199}
+            height={230}
+            className="mx-auto h-auto w-full max-w-md -rotate-1"
+          />
+
+          <div className="relative mx-auto mt-12 max-w-4xl border-4 border-zinc-700 bg-zinc-900/90 p-6 shadow-2xl sm:p-10">
+            <span className="absolute top-2 left-3 text-[10px] tracking-[0.25em] text-zinc-500 uppercase">
               TV monitor placeholder
             </span>
             <div className="grid gap-8 pt-4 md:grid-cols-2 md:items-center">
@@ -297,11 +255,16 @@ export default function Page() {
                   something we could actually launch. Clear communication, no
                   drama, and the final cut landed days early.&rdquo;
                 </blockquote>
-                <Text variant="small" className="mt-6 uppercase tracking-widest text-zinc-400">
+                <Text
+                  variant="small"
+                  className="mt-6 tracking-widest text-zinc-400 uppercase"
+                >
                   Demo Client &mdash; Brand Team
                 </Text>
               </div>
-              <Placeholder {...placeholders.testimonialImage} />
+              <div className="flex aspect-square w-full max-w-xs items-center justify-center justify-self-center border border-dashed border-zinc-400/40 bg-zinc-600/25 p-4 text-center text-[11px] font-semibold tracking-[0.18em] text-zinc-100 uppercase">
+                Testimonial Image Placeholder
+              </div>
             </div>
           </div>
         </div>
@@ -314,7 +277,7 @@ export default function Page() {
             Contact Me
           </h2>
           <div className="mx-auto mt-14 max-w-3xl bg-[#f3e8d3] p-6 text-zinc-900 sm:p-10">
-            <p className="text-[10px] tracking-[0.25em] uppercase text-zinc-500">
+            <p className="text-[10px] tracking-[0.25em] text-zinc-500 uppercase">
               Parchment placeholder
             </p>
             <form
@@ -372,7 +335,7 @@ export default function Page() {
         <div className={cn(shellClass, "text-center")}>
           <Link
             href="/exp"
-            className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            className="text-xs text-white/70 underline-offset-4 hover:text-white hover:underline"
           >
             Experiments
           </Link>
