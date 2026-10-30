@@ -20,6 +20,7 @@ const shellClass = "mx-auto w-full max-w-5xl px-6"
 const work = [
   {
     label: "Graphic Design",
+    href: "/graphics-design",
     src: "/sketchbook.webp",
     width: 512,
     height: 508,
@@ -27,6 +28,7 @@ const work = [
   },
   {
     label: "Animation",
+    href: "/animations",
     src: "/crt.webp",
     width: 512,
     height: 508,
@@ -34,6 +36,7 @@ const work = [
   },
   {
     label: "Films",
+    href: "/cinematography",
     src: "/camera.webp",
     width: 512,
     height: 508,
@@ -204,14 +207,20 @@ export default function Page() {
                   item.className
                 )}
               >
-                <Image
-                  src={item.src}
-                  alt=""
-                  width={item.width}
-                  height={item.height}
-                  sizes="240px"
-                  className="h-44 w-auto object-contain drop-shadow-[0_18px_24px_rgba(0,0,0,0.45)]"
-                />
+                <Link
+                  href={item.href}
+                  aria-label={`${item.label} — view work`}
+                  className="block transition-transform duration-300 ease-out hover:rotate-0 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent"
+                >
+                  <Image
+                    src={item.src}
+                    alt=""
+                    width={item.width}
+                    height={item.height}
+                    sizes="240px"
+                    className="h-44 w-auto object-contain drop-shadow-[0_18px_24px_rgba(0,0,0,0.45)]"
+                  />
+                </Link>
                 <span className="mt-4 text-[11px] font-semibold tracking-[0.18em] uppercase">
                   {item.label}
                 </span>
