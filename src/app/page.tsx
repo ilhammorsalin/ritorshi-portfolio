@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import Link from "next/link"
 import Image from "next/image"
@@ -20,24 +20,27 @@ const shellClass = "mx-auto w-full max-w-5xl px-6"
 const work = [
   {
     label: "Graphic Design",
+    href: "/graphic-design",
     src: "/sketchbook.webp",
     width: 512,
     height: 508,
-    className: "-rotate-6",
+    className: "rotate-6",
   },
   {
     label: "Animation",
+    href: "/animation",
     src: "/crt.webp",
     width: 512,
     height: 508,
-    className: "rotate-3",
+    className: "rotate-3 mt-6",
   },
   {
     label: "Films",
+    href: "/films",
     src: "/camera.webp",
     width: 512,
     height: 508,
-    className: "-rotate-2",
+    className: "-rotate-10",
   },
 ]
 
@@ -65,11 +68,41 @@ const testimonials = [
 
 // Softly curved, scattered row of tool icons under "i Kick Ass At".
 const tools = [
-  { label: "Photoshop", src: "/about/ps.png", width: 147, height: 146, className: "h-12 -translate-y-1 -rotate-6 sm:h-14" },
-  { label: "Animate", src: "/about/an.png", width: 136, height: 134, className: "h-14 translate-y-1 rotate-6 sm:h-16" },
-  { label: "Premiere Pro", src: "/about/pr.png", width: 142, height: 139, className: "h-12 -rotate-3 sm:h-14" },
-  { label: "Figma", src: "/about/figma.png", width: 90, height: 121, className: "h-12 -translate-y-2 rotate-3 sm:h-14" },
-  { label: "Blender", src: "/about/blender.png", width: 330, height: 270, className: "h-12 translate-y-4 -rotate-6 sm:h-14 sm:ml-10" },
+  {
+    label: "Photoshop",
+    src: "/about/ps.png",
+    width: 147,
+    height: 146,
+    className: "h-12 -translate-y-1 -rotate-6 sm:h-14",
+  },
+  {
+    label: "Animate",
+    src: "/about/an.png",
+    width: 136,
+    height: 134,
+    className: "h-14 translate-y-1 rotate-6 sm:h-16",
+  },
+  {
+    label: "Premiere Pro",
+    src: "/about/pr.png",
+    width: 142,
+    height: 139,
+    className: "h-12 -rotate-3 sm:h-14",
+  },
+  {
+    label: "Figma",
+    src: "/about/figma.png",
+    width: 90,
+    height: 121,
+    className: "h-12 -translate-y-2 rotate-3 sm:h-14",
+  },
+  {
+    label: "Blender",
+    src: "/about/blender.png",
+    width: 330,
+    height: 270,
+    className: "h-12 translate-y-4 -rotate-6 sm:h-14 sm:ml-10",
+  },
 ]
 
 const story = [
@@ -81,6 +114,56 @@ const story = [
 export default function Page() {
   const [slide, setSlide] = useState(0)
   const [pressed, setPressed] = useState<"left" | "right" | null>(null)
+  const heroRef = useRef<HTMLImageElement>(null)
+
+  // Idle hop for the hero title; composite "add" layers the translateY on top
+  // of the static rotation, so hover/click keep composing cleanly.
+  useEffect(() => {
+    const el = heroRef.current
+    if (
+      !el ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return
+    }
+    const hop = () => {
+      if (document.hidden) return
+      el.animate(
+        [
+          { transform: "translateY(0)", easing: "cubic-bezier(0.23, 1, 0.32, 1)" },
+          { transform: "translateY(-2.5%)", offset: 0.28, easing: "cubic-bezier(0.77, 0, 0.175, 1)" },
+          { transform: "translateY(0)", offset: 0.46, easing: "cubic-bezier(0.23, 1, 0.32, 1)" },
+          { transform: "translateY(-0.8%)", offset: 0.62, easing: "cubic-bezier(0.77, 0, 0.175, 1)" },
+          { transform: "translateY(0)", offset: 0.74 },
+        ],
+        { duration: 1900, composite: "add" }
+      )
+    }
+    hop()
+    const id = window.setInterval(hop, 2600)
+    return () => window.clearInterval(id)
+  }, [])
+
+  // One bigger bounce on click; skipped under reduced motion.
+  const heroBounce = () => {
+    const el = heroRef.current
+    if (
+      !el ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return
+    }
+    el.animate(
+      [
+        { transform: "translateY(0)", easing: "cubic-bezier(0.23, 1, 0.32, 1)" },
+        { transform: "translateY(-5%)", offset: 0.32, easing: "cubic-bezier(0.77, 0, 0.175, 1)" },
+        { transform: "translateY(0)", offset: 0.58, easing: "cubic-bezier(0.23, 1, 0.32, 1)" },
+        { transform: "translateY(-1.5%)", offset: 0.76, easing: "cubic-bezier(0.77, 0, 0.175, 1)" },
+        { transform: "translateY(0)", offset: 1 },
+      ],
+      { duration: 700, composite: "add" }
+    )
+  }
 
   const changeSlide = (direction: "left" | "right") => {
     setSlide(
@@ -136,85 +219,57 @@ export default function Page() {
       {/* 1. Hero */}
       <section
         aria-labelledby="hero-heading"
-        className="flex min-h-screen items-center justify-center px-6 py-24"
+        className="flex min-h-[72svh] items-center justify-center px-6 py-6"
       >
         <h1 id="hero-heading" className="sr-only">
           Ritorshi&rsquo;s Studio
         </h1>
         <Image
+          ref={heroRef}
+          onClick={heroBounce}
           src="/hero-text.webp"
           alt=""
           width={1019}
           height={429}
           priority
-          className="h-auto w-full max-w-3xl -rotate-2"
+          className="hero-nudge h-auto w-full max-w-3xl cursor-pointer"
         />
       </section>
 
-      {/* 2. Process */}
-      <section aria-labelledby="process-heading" className="py-24 sm:py-32">
-        <div
-          className={cn(shellClass, "grid items-center gap-12 lg:grid-cols-2")}
-        >
-          <div>
-            <h2 id="process-heading" className={headingClass}>
-              Follow How I Get My Work Done
-            </h2>
-            <div className="mt-6 space-y-4">
-              <Text>
-                Every project starts with a conversation and a messy page of
-                notes. I map out the story first, then sketch the frames, then
-                pick the tools that suit it. Nothing gets polished until the
-                structure holds up on its own.
-              </Text>
-              <Text>
-                Drafts are shared early and often, because feedback is cheaper
-                before the render farm gets involved. Colour, timing and type
-                get tested in small loops: a single frame, a five-second loop, a
-                short cut. If it does not read clearly at that scale, it will
-                not read clearly at the end.
-              </Text>
-              <Text>
-                The last pass is where the work earns its keep. I clean up
-                curves, tighten audio cues and export versions that fit each
-                destination, from a vertical teaser to a full wide cut. Then the
-                files go out with everything labelled so nobody has to guess
-                what they are looking at.
-              </Text>
-            </div>
-          </div>
-          <div className="flex min-h-72 items-center justify-center border border-dashed border-purple-400/50 bg-purple-600/40 p-4 text-center text-[11px] font-semibold tracking-[0.18em] text-purple-50 uppercase lg:min-h-[26rem]">
-            Process Image Placeholder
-          </div>
-        </div>
-      </section>
-
       {/* 3. My Work */}
-      <section aria-labelledby="work-heading" className="py-24 sm:py-32">
-        <div className={shellClass}>
-          <h2 id="work-heading" className={cn(headingClass, "text-center")}>
+      <section aria-labelledby="work-heading" className="pt-2 pb-24 sm:pt-4 sm:pb-32">
+        <div className={cn(shellClass, "max-w-6xl")}>
+          <h2
+            id="work-heading"
+            className="text-center text-6xl font-semibold tracking-[0.18em] uppercase"
+          >
             My Work
           </h2>
-          <ul className="mt-14 flex flex-col items-center justify-center gap-14 sm:flex-row sm:items-start sm:justify-between sm:gap-10 lg:gap-16">
+          <ul className="mt-6 flex flex-col items-center justify-center gap-14 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
             {work.map((item) => (
               <li
                 key={item.label}
                 className={cn(
-                  "flex w-56 shrink-0 flex-col items-center",
+                  "flex w-[21rem] shrink-0 flex-col items-center",
                   item.className
                 )}
               >
-                <Image
-                  src={item.src}
-                  alt=""
-                  width={item.width}
-                  height={item.height}
-                  sizes="240px"
-                  className="h-44 w-auto object-contain drop-shadow-[0_18px_24px_rgba(0,0,0,0.45)]"
-                />
-                <span className="mt-4 text-[11px] font-semibold tracking-[0.18em] uppercase">
-                  {item.label}
-                </span>
+                <Link
+                  href={item.href}
+                  className="flex flex-col items-center focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
+                >
+                  <Image
+                    src={item.src}
+                    alt={item.label}
+                    width={item.width}
+                    height={item.height}
+                    sizes="420px"
+                    className="h-88 w-auto object-contain drop-shadow-[0_18px_24px_rgba(0,0,0,0.45)] transition-transform hover:scale-105"
+                  />
+                  <span className="mt-5 text-xl font-semibold tracking-[0.18em] uppercase sm:text-2xl">
+                    {item.label}
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>
@@ -244,76 +299,76 @@ export default function Page() {
             unoptimized
             className="h-auto w-full"
           />
-          <div className="relative w-full">              <Image
-                src="/full-text.webp"
-                alt=""
-                width={1164}
-                height={1986}
-                className="h-auto w-full"
-              />
-              {/* Yellow banner sits just above the "I Am" line, tipped up to the right. */}
-              <Image
+          <div className="relative w-full">
+            {" "}
+            <Image
+              src="/full-text.webp"
+              alt=""
+              width={1164}
+              height={1986}
+              className="h-auto w-full"
+            />
+            {/* Yellow banner sits just above the "I Am" line, tipped up to the right. */}
+            <Image
               src="/yellow-banner.webp"
               alt=""
               width={799}
               height={281}
               sizes="34vw"
-                className="pointer-events-none absolute left-1/2 top-[-5%] w-[34%] -translate-x-1/2 rotate-2 drop-shadow-[0_10px_16px_rgba(0,0,0,0.4)]"
-              />
-              {/* Nametag scaled up and wedged between "I Am" and "AnD My",
+              className="pointer-events-none absolute top-[-5%] left-1/2 w-[34%] -translate-x-1/2 rotate-2 drop-shadow-[0_10px_16px_rgba(0,0,0,0.4)]"
+            />
+            {/* Nametag scaled up and wedged between "I Am" and "AnD My",
                   its bottom edge just kissing the line below. */}
-              <Image
+            <Image
               src="/red-banner.webp"
               alt=""
               width={531}
               height={354}
               sizes="24vw"
-                className="pointer-events-none absolute left-1/2 top-[1%] w-[22%] -translate-x-1/2 -rotate-2 drop-shadow-[0_10px_16px_rgba(0,0,0,0.4)]"
-              />
-              {/* Polaroid pinned over the orange "4" and the skills list. */}
-              <Image
+              className="pointer-events-none absolute top-[1%] left-1/2 w-[22%] -translate-x-1/2 -rotate-2 drop-shadow-[0_10px_16px_rgba(0,0,0,0.4)]"
+            />
+            {/* Polaroid pinned over the orange "4" and the skills list. */}
+            <Image
               src="/polaroid-1.webp"
               alt=""
               width={495}
               height={603}
               sizes="28vw"
-                className="pointer-events-none absolute right-[1%] top-[26%] w-[28%] -rotate-2 drop-shadow-[0_14px_22px_rgba(0,0,0,0.45)]"
-              />
-              {/* Duplicate polaroid tucked below "* 3D StUfF" on the left edge. */}
-              <Image
+              className="pointer-events-none absolute top-[26%] right-[1%] w-[28%] -rotate-2 drop-shadow-[0_14px_22px_rgba(0,0,0,0.45)]"
+            />
+            {/* Duplicate polaroid tucked below "* 3D StUfF" on the left edge. */}
+            <Image
               src="/polaroid-1.webp"
               alt=""
               width={495}
               height={603}
               sizes="24vw"
-                className="pointer-events-none absolute left-[2%] top-[52%] w-[24%] rotate-2 drop-shadow-[0_14px_22px_rgba(0,0,0,0.45)]"
-              />
-              {/* Hand-drawn accent above the artwork's closing text block. */}
-              <p
-                aria-hidden
-                className="pointer-events-none absolute left-1/2 top-[75.5%] -translate-x-1/2 -rotate-[8deg] font-marker text-[clamp(1.5rem,4.5vw,3.75rem)] leading-none text-orange-500 whitespace-nowrap"
-              >
-                Canon Event
-              </p>
-              {/* Sits in the gap under the "i Kick Ass At" line of the artwork. */}
-              <ul className="absolute inset-x-0 top-[66%] flex items-center justify-center gap-5 sm:gap-8">
-                {tools.map((tool) => (
-                  <li key={tool.label}>
-                    <Image
-                      src={tool.src}
-                      alt={tool.label}
-                      width={tool.width}
-                      height={tool.height}
-                      sizes="64px"
-                      unoptimized={tool.src.endsWith(".svg")}
-                      className={cn(
-                        "w-auto drop-shadow-[0_6px_10px_rgba(0,0,0,0.45)]",
-                        tool.className
-                      )}
-                    />
-                  </li>
-                ))}
-              </ul>
+              className="pointer-events-none absolute top-[60%] left-[2%] w-[35%] rotate-20 drop-shadow-[0_14px_22px_rgba(0,0,0,0.45)]"
+            />
+            {/* Hand-drawn accent above the artwork's closing text block. */}
+            <p
+              aria-hidden
+              className="pointer-events-none absolute top-[75.5%] left-1/2 -translate-x-1/2 -rotate-[8deg] font-marker text-[clamp(1.5rem,4.5vw,3.75rem)] leading-none whitespace-nowrap text-orange-500"
+            ></p>
+            {/* Sits in the gap under the "i Kick Ass At" line of the artwork. */}
+            <ul className="absolute inset-x-0 top-[70%] left-[40%] flex items-center justify-center gap-5 sm:gap-3">
+              {tools.map((tool) => (
+                <li key={tool.label}>
+                  <Image
+                    src={tool.src}
+                    alt={tool.label}
+                    width={tool.width}
+                    height={tool.height}
+                    sizes="64px"
+                    unoptimized={tool.src.endsWith(".svg")}
+                    className={cn(
+                      "w-auto drop-shadow-[0_6px_10px_rgba(0,0,0,0.45)]",
+                      tool.className
+                    )}
+                  />
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
@@ -338,7 +393,7 @@ export default function Page() {
           <div className="mt-12 flex items-center justify-center gap-2 sm:gap-8">
             {arrowButton("left")}
 
-            <div className="relative w-full min-w-0 max-w-2xl">
+            <div className="relative w-full max-w-2xl min-w-0">
               <Image
                 src="/monitor.webp"
                 alt=""
@@ -347,7 +402,7 @@ export default function Page() {
                 sizes="(min-width: 768px) 672px, 60vw"
                 className="h-auto w-full drop-shadow-[0_28px_45px_rgba(0,0,0,0.5)]"
               />
-              <div className="absolute left-[8%] top-[22.3%] h-[48.5%] w-[86.1%] overflow-hidden rounded-[2.5%] bg-black">
+              <div className="absolute top-[22.3%] left-[8%] h-[48.5%] w-[86.1%] overflow-hidden rounded-[2.5%] bg-black">
                 <Image
                   src={testimonials[slide].src}
                   alt=""

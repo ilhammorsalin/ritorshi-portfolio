@@ -37,3 +37,7 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# asset masters (kept local, processed by scripts/prepare-portfolio-assets.mjs)
+/Assets
+/assets-prep.log
